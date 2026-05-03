@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spy Ultra: Professional</title>
+    <style>
+        :root { --primary: #8b5cf6; --spy: #ef4444; --bg: #070b14; --card-bg: #151c2c; --text: #f8fafc; --accent: #10b981; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .game-card { background: var(--card-bg); width: 92%; max-width: 500px; padding: 25px; border-radius: 35px; box-shadow: 0 25px 60px rgba(0,0,0,0.7); text-align: center; border: 1px solid rgba(255,255,255,0.08); }
+        
+        /* Стили сетки категорий */
+        .categories-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; text-align: left; }
+        .cat-item { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12px; border: 1px solid transparent; transition: 0.2s; }
+        .cat-item:has(input:checked) { border-color: var(--primary); background: rgba(139, 92, 246, 0.1); }
+        .select-all-box { background: rgba(139, 92, 246, 0.2); margin-bottom: 10px; border: 1px solid var(--primary); justify-content: center; font-weight: bold; }
+
+        .role-box { text-align: left; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 20px; border-left: 5px solid var(--primary); margin: 20px 0; }
+        .role-label { font-size: 11px; text-transform: uppercase; color: #94a3b8; font-weight: 800; margin-bottom: 4px; }
+        .role-value { font-size: 22px; font-weight: 900; color: #fff; margin-bottom: 15px; }
+        
+        .spy-screen { color: var(--spy); padding: 20px 0; }
+        .spy-title { font-size: 42px; font-weight: 900; margin: 0 0 10px 0; }
+        .fake-info { background: rgba(239, 68, 68, 0.1); border: 1px dashed var(--spy); padding: 15px; border-radius: 15px; color: #fca5a5; font-size: 14px; text-align: left; }
+
+        button { background: linear-gradient(135deg, var(--primary), #6d28d9); color: white; border: none; padding: 18px; border-radius: 20px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
+        .settings-box { background: rgba(255,255,255,0.03); padding: 20px; border-radius: 22px; margin-bottom: 20px; text-align: left; }
+        .hidden { display: none; }
+        .player-entry { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 12px; }
+        .score-badge { background: var(--primary); padding: 5px 10px; border-radius: 8px; font-weight: bold; min-width: 25px; text-align: center; }
+        input[type="checkbox"] { accent-color: var(--primary); cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="game-card">
+    <div id="screen-main">
+        <h1>SPY ULTRA</h1>
+        <div class="settings-box">
+            <label style="font-size: 11px; font-weight: 800; color: #94a3b8;">ВЫБЕРИТЕ ТЕМЫ:</label>
+            
+            <!-- Кнопка Выбрать все -->
+            <label class="cat-item select-all-box" style="margin-top:10px;">
+                <input type="checkbox" id="master-checkbox" checked onchange="toggleAll(this.checked)"> ВЫБРАТЬ ВСЕ
+            </label>
+
+            <div class="categories-grid" id="categories-pool"></div>
+
+            <label style="display:block; margin-top:15px; font-size: 11px; font-weight: 800; color: #94a3b8;">ИГРОКОВ:</label>
+            <input type="number" id="player-count" min="3" max="12" value="3" onchange="syncPlayers()" 
+                style="width: 100%; padding: 12px; border-radius: 10px; background: #070b14; color: white; border: 1px solid #334155; margin-top: 5px; box-sizing: border-box;">
+        </div>
+        <button onclick="initGame()">ИГРАТЬ</button>
+        <button onclick="showScreen('screen-players')" style="background: #334155;">ИГРОКИ</button>
+    </div>
+
+    <!-- Другие экраны (остались без изменений) -->
+    <div id="screen-players" class="hidden">
+        <h2>ИГРОКИ</h2>
+        <div id="players-list-editor" style="max-height: 250px; overflow-y: auto; margin-bottom: 20px;"></div>
+        <button onclick="showScreen('screen-main')" style="background: var(--accent);">ГОТОВО</button>
+    </div>
+
+    <div id="screen-pass" class="hidden">
+        <p>ПЕРЕДАЙ ТЕЛЕФОН:</p>
+        <h1 id="pass-label" style="font-size:42px; color:var(--primary);">?</h1>
+        <button onclick="showRole()">ОТКРЫТЬ</button>
+    </div>
+
+    <div id="screen-role" class="hidden">
+        <div id="role-content"></div>
+        <button onclick="nextPlayer()">Я ЗАПОМНИЛ</button>
+    </div>
+
+    <div id="screen-play" class="hidden">
+        <div id="timer-display" style="font-size:64px; font-weight:900; color:var(--accent); margin:30px 0;">03:00</div>
+        <button onclick="toggleTimer()">СТАРТ / ПАУЗА</button>
+        <button onclick="showFinish()" style="background:none; border:1px solid #334155; color:#64748b; margin-top: 20px;">ФИНИШ</button>
+    </div>
+
+    <div id="screen-finish" class="hidden">
+        <h1 id="end-title">КТО БЫЛ КЕМ?</h1>
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <button onclick="awardPoint('spy')" style="background:var(--spy); margin:0;">ШПИОН +1</button>
+            <button onclick="awardPoint('citizens')" style="background:var(--accent); margin:0;">МИРНЫЕ +1</button>
+        </div>
+        <div id="reveal-list" style="text-align:left; font-size:14px; opacity:0.7; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 15px;"></div>
+        <button onclick="location.reload()" style="margin-top: 15px;">В МЕНЮ</button>
+    </div>
+</div>
+
+<script>
+const themes = {
+    disney: { title: "Дисней", items: [
+        {n: "Король Лев", d: "Саванна, Симба и гиены."},
+        {n: "Холодное сердце", d: "Олаф, Эльза и магия льда."},
+        {n: "Аладдин", d: "Джинн, лампа и ковер-самолет."}
+    ]},
+    minecraft: { title: "Майнкрафт", items: [
+        {n: "Крипер", d: "Шипит и взрывается."},
+        {n: "Эндермен", d: "Телепортируется и ворует блоки."},
+        {n: "Алмаз", d: "Самая ценная руда в шахте."}
+    ]},
+    famous: { title: "Личности", items: [
+        {n: "Илон Маск", d: "Ракеты, космос и Тесла."},
+        {n: "Павел Дуров", d: "Создатель Телеграм."},
+        {n: "Роналду", d: "Легенда футбола №7."}
+    ]},
+    games: { title: "Игры", items: [
+        {n: "Dota 2", d: "Трон, линии и лес."},
+        {n: "Brawl Stars", d: "Гемы и бравлеры."},
+        {n: "CS 2", d: "Бомба и спецназ."}
+    ]},
+    food: { title: "Еда", items: [
+        {n: "Пицца", d: "Круглая, с сыром и тестом."},
+        {n: "Шаурма", d: "Мясо в лаваше."},
+        {n: "Суши", d: "Рис и сырая рыба."}
+    ]},
+    locations: { title: "Локации", items: [
+        {n: "Школа", d: "Парты, доска и перемены."},
+        {n: "Больница", d: "Врачи и лекарства."},
+        {n: "Кино", d: "Попкорн и фильмы."}
+    ]},
+    memes: { title: "Мемы", items: [
+        {n: "Скуф", d: "Танки и диван."},
+        {n: "52", d: "Дааааа, Friendly Thug."},
+        {n: "Хасбик", d: "Маленький боец."}
+    ]}
+};
+
+let playerData = JSON.parse(localStorage.getItem('spyPlayers')) || [
+    {id:0, name:"Игрок 1", score:0}, {id:1, name:"Игрок 2", score:0}, {id:2, name:"Игрок 3", score:0}
+];
+
+let currentSession = [], curIdx = 0, timerVal = 180, timerInt;
+
+// Генерация списка тем
+function renderCategories() {
+    const grid = document.getElementById('categories-pool');
+    grid.innerHTML = '';
+    Object.keys(themes).forEach(key => {
+        const label = document.createElement('label');
+        label.className = 'cat-item';
+        label.innerHTML = `<input type="checkbox" class="cat-checkbox" value="${key}" checked onchange="checkMaster()"> ${themes[key].title}`;
+        grid.appendChild(label);
+    });
+}
+
+// Функция "Выбрать все"
+function toggleAll(state) {
+    document.querySelectorAll('.cat-checkbox').forEach(cb => cb.checked = state);
+}
+
+// Проверка мастер-чекбокса
+function checkMaster() {
+    const all = document.querySelectorAll('.cat-checkbox');
+    const checked = document.querySelectorAll('.cat-checkbox:checked');
+    document.getElementById('master-checkbox').checked = (all.length === checked.length);
+}
+
+function syncPlayers() {
+    const count = parseInt(document.getElementById('player-count').value);
+    while(playerData.length < count) {
+        playerData.push({id: playerData.length, name: `Игрок ${playerData.length + 1}`, score: 0});
+    }
+    saveData();
+    renderPlayerEditor();
+}
+
+function renderPlayerEditor() {
+    const cont = document.getElementById('players-list-editor');
+    cont.innerHTML = "";
+    playerData.slice(0, document.getElementById('player-count').value).forEach(p => {
+        const div = document.createElement('div');
+        div.className = "player-entry";
+        div.innerHTML = `<div class="score-badge">${p.score}</div><input type="text" value="${p.name}" onchange="updateName(${p.id}, this.value)">`;
+        cont.appendChild(div);
+    });
+}
+
+function updateName(id, val) { playerData[id].name = val; saveData(); }
+function saveData() { localStorage.setItem('spyPlayers', JSON.stringify(playerData)); }
+
+function initGame() {
+    const checked = Array.from(document.querySelectorAll('.cat-checkbox:checked')).map(i => i.value);
+    if(checked.length === 0) return alert("Выберите хотя бы одну тему!");
+
+    curIdx = 0;
+    const randomCatKey = checked[Math.floor(Math.random() * checked.length)];
+    const themeData = themes[randomCatKey];
+    const correctWord = themeData.items[Math.floor(Math.random() * themeData.items.length)];
+    const count = parseInt(document.getElementById('player-count').value);
+
+    const allOtherItems = themeData.items.filter(i => i.n !== correctWord.n);
+    let ids = Array.from({length: count}, (_, i) => i).sort(() => Math.random() - 0.5);
+    let spies = ids.slice(0, count >= 6 ? 2 : 1);
+
+    let players = [];
+    for(let i=0; i<count; i++) {
+        const isSpy = spies.includes(i);
+        const randomFake = allOtherItems[Math.floor(Math.random() * allOtherItems.length)] || themeData.items[0];
+        players.push({
+            id: i, isSpy: isSpy, themeName: themeData.title,
+            roleName: isSpy ? "ШПИОН" : correctWord.n,
+            description: isSpy ? "Слушай других и угадай тему!" : correctWord.d,
+            spyHint: isSpy ? randomFake.n : ""
+        });
+    }
+    currentSession = players.sort(() => Math.random() - 0.5);
+    showScreen('screen-pass');
+    updatePassLabel();
+}
+
+function updatePassLabel() {
+    document.getElementById('pass-label').innerText = playerData[currentSession[curIdx].id].name;
+}
+
+function showRole() {
+    const p = currentSession[curIdx];
+    const cont = document.getElementById('role-content');
+    if(p.isSpy) {
+        cont.innerHTML = `<div class="spy-screen"><h1 class="spy-title">ТЫ ШПИОН</h1><div class="fake-info"><b>ЛОЖНАЯ ЗАЦЕПКА:</b><br>Возможно это: <b>${p.spyHint}</b></div></div>`;
+    } else {
+        cont.innerHTML = `<div class="role-box"><div class="role-label">ТЕМА:</div><div class="role-value">${p.themeName}</div><div class="role-label">РОЛЬ:</div><div class="role-value" style="color:var(--accent)">${p.roleName}</div><div class="role-label">ПОДСКАЗКА:</div><div style="font-size:14px; color:#cbd5e1;">${p.description}</div></div>`;
+    }
+    showScreen('screen-role');
+}
+
+function nextPlayer() {
+    curIdx++;
+    if(curIdx < currentSession.length) { showScreen('screen-pass'); updatePassLabel(); }
+    else showScreen('screen-play');
+}
+
+function toggleTimer() {
+    if(timerInt) { clearInterval(timerInt); timerInt = null; }
+    else {
+        timerInt = setInterval(() => {
+            timerVal--;
+            let m = Math.floor(timerVal/60), s = timerVal % 60;
+            document.getElementById('timer-display').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            if(timerVal <= 0) clearInterval(timerInt);
+        }, 1000);
+    }
+}
+
+function awardPoint(winner) {
+    currentSession.forEach(p => {
+        if(winner === 'spy' && p.isSpy) playerData[p.id].score++;
+        if(winner === 'citizens' && !p.isSpy) playerData[p.id].score++;
+    });
+    saveData();
+    location.reload();
+}
+
+function showFinish() {
+    showScreen('screen-finish');
+    document.getElementById('reveal-list').innerHTML = currentSession.map(p => 
+        `<div style="margin-bottom: 5px;">${playerData[p.id].name}: <b>${p.roleName}</b></div>`
+    ).join('');
+}
+
+function showScreen(id) {
+    document.querySelectorAll('.game-card > div').forEach(d => d.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+}
+
+renderCategories();
+syncPlayers();
+</script>
+</body>
+</html>
