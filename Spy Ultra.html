@@ -1,0 +1,915 @@
+
+<!-- saved from url=(0032)http://127.0.0.1:5500/index.html -->
+<html lang="ru"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body>м
+
+
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Spy Ultra</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --bg: #050a18;
+            --card: rgba(30, 41, 59, 0.7);
+            --primary: #6366f1;
+            --secondary: #1e293b;
+            --accent: #10b981;
+            --danger: #f43f5e;
+            --text: #f8fafc;
+            --vip-grad: linear-gradient(45deg, #fbbf24, #f59e0b);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background: radial-gradient(circle at top, #1e293b 0%, #050a18 100%);
+            color: var(--text);
+            font-family: 'Exo 2', system-ui, sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .app { width: 100%; max-width: 500px; padding: 20px; margin: 0 auto; min-height: 100vh; }
+
+        .nav {
+            display: flex; gap: 8px; margin-bottom: 25px;
+            background: rgba(15, 23, 42, 0.8); padding: 6px; border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px);
+        }
+        .tab {
+            flex: 1; padding: 12px; border-radius: 14px; border: none; background: none;
+            color: #94a3b8; cursor: pointer; font-size: 11px; font-weight: 800;
+            text-transform: uppercase; transition: 0.3s ease; font-family: 'Exo 2', sans-serif;
+        }
+        .tab.active { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(99,102,241,0.4); }
+
+        .card {
+            background: var(--card); border-radius: 28px; padding: 24px;
+            border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;
+            backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h2 { margin: 0 0 15px 0; font-size: 14px; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+
+        input, select, textarea {
+            width: 100%; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.1);
+            padding: 14px; border-radius: 16px; color: white; margin-bottom: 12px;
+            font-family: 'Exo 2', sans-serif; font-size: 14px;
+        }
+        input[type=range] { padding: 6px; }
+        input[type=color] { padding: 5px; height: 45px; }
+        input[type=checkbox] { width: auto; margin: 0; }
+        textarea { resize: vertical; min-height: 80px; }
+        select option { background: #1e293b; }
+
+        button {
+            background: var(--primary); color: white; border: none; padding: 18px; border-radius: 18px;
+            font-weight: 800; cursor: pointer; width: 100%; transition: 0.3s;
+            box-shadow: 0 4px 20px rgba(99,102,241,0.3); font-family: 'Exo 2', sans-serif; font-size: 14px;
+        }
+        button:active { transform: scale(0.96); }
+        .btn-sec { background: var(--secondary); color: #94a3b8; box-shadow: none; }
+        .btn-danger { background: var(--danger); box-shadow: 0 4px 20px rgba(244,63,94,0.3); }
+        .btn-accent { background: var(--accent); box-shadow: 0 4px 20px rgba(16,185,129,0.3); }
+        .btn-sm { padding: 8px 14px; border-radius: 12px; font-size: 12px; width: auto; }
+
+        .chip {
+            background: rgba(255,255,255,0.05); padding: 10px 16px; border-radius: 12px;
+            font-size: 12px; cursor: pointer; border: 1px solid transparent; transition: 0.2s;
+            font-weight: 700;
+        }
+        .chip.selected { border-color: var(--primary); background: rgba(99,102,241,0.2); color: white; }
+
+        /* Галлюцинации */
+        #hall-active-layer {
+            position: fixed; z-index: 9999; pointer-events: none; font-weight: 900;
+            display: none; text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+            font-family: 'Exo 2', sans-serif;
+        }
+        #hall-overlay {
+            position: fixed; inset: 0; z-index: 10000; display: none;
+            background: rgba(0,0,0,0.85);
+        }
+        #hall-preview-text {
+            position: absolute; cursor: move; user-select: none;
+            font-weight: 900; white-space: nowrap; font-family: 'Exo 2', sans-serif;
+        }
+
+        /* Игровой экран */
+        #game-view {
+            position: fixed; inset: 0; background: radial-gradient(circle at top, #1e293b 0%, #050a18 100%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 30px; text-align: center;
+        }
+        #game-view h1 { font-size: 42px; margin: 15px 0; font-weight: 900; }
+        #game-view h2 { font-size: 20px; margin: 10px 0; }
+        #game-view > div { width: 100%; max-width: 400px; }
+
+        .vote-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255,255,255,0.05); padding: 12px 16px; border-radius: 16px;
+            margin-bottom: 8px; cursor: pointer; border: 2px solid transparent; transition: 0.2s;
+        }
+        .vote-item.voted { border-color: var(--danger); background: rgba(244,63,94,0.15); }
+
+        .res-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 16px; border-radius: 16px; margin-bottom: 8px;
+            background: rgba(255,255,255,0.05);
+        }
+        .res-spy { background: rgba(244,63,94,0.2); border: 1px solid var(--danger); }
+        .res-civil { background: rgba(16,185,129,0.1); border: 1px solid var(--accent); }
+
+        /* Статистика */
+        .stat-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px; border-radius: 14px; background: rgba(255,255,255,0.04);
+            margin-bottom: 6px;
+        }
+
+        /* Игроки */
+        .player-row {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.04); padding: 10px; border-radius: 14px;
+            margin-bottom: 8px;
+        }
+        .player-row input { margin: 0; flex: 1; padding: 8px 12px; border-radius: 10px; font-size: 13px; }
+        .player-row button { width: auto; padding: 8px 12px; border-radius: 10px; font-size: 12px; }
+
+        /* Темы в редакторе */
+        .theme-edit-card {
+            background: rgba(255,255,255,0.04); border-radius: 18px; padding: 16px;
+            margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08);
+        }
+        .theme-edit-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
+        }
+        .theme-edit-header input { margin: 0; flex: 1; padding: 8px 12px; border-radius: 10px; font-size: 13px; }
+
+        /* Админка */
+        #admin-panel {
+            position: fixed; inset: 0; background: #050a18; z-index: 1000;
+            padding: 20px; overflow-y: auto; display: none;
+        }
+        .adm-header {
+            text-align: center; margin-bottom: 20px; padding-bottom: 15px;
+            border-bottom: 1px solid rgba(244,63,94,0.3);
+        }
+        .adm-section {
+            border-bottom: 1px solid rgba(255,255,255,0.05); padding: 18px 0;
+        }
+        .adm-label {
+            font-size: 11px; color: var(--primary); text-transform: uppercase;
+            font-weight: 800; margin-bottom: 12px; display: block; letter-spacing: 1px;
+        }
+
+        .vip-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+            background: rgba(0,0,0,0.2); padding: 12px; border-radius: 16px; margin-bottom: 12px;
+        }
+        .vip-grid label {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 12px; cursor: pointer; padding: 4px;
+        }
+
+        .toggle-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px; background: rgba(255,255,255,0.04); border-radius: 12px; margin-bottom: 8px;
+        }
+        .toggle-row span { font-size: 13px; }
+        .toggle { position: relative; width: 46px; height: 26px; flex-shrink: 0; }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute; inset: 0; background: #334155; border-radius: 26px;
+            cursor: pointer; transition: 0.3s;
+        }
+        .toggle-slider:before {
+            content: ''; position: absolute; width: 20px; height: 20px;
+            left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s;
+        }
+        .toggle input:checked + .toggle-slider { background: var(--primary); }
+        .toggle input:checked + .toggle-slider:before { transform: translateX(20px); }
+
+        .hall-params { transition: 0.3s; overflow: hidden; }
+        .hall-params.collapsed { max-height: 0; opacity: 0; pointer-events: none; }
+
+        .hidden { display: none !important; }
+        .secret-trig { text-align: center; opacity: 0.05; font-size: 10px; cursor: pointer; padding: 40px; font-family: 'Share Tech Mono', monospace; }
+
+        /* Результаты голосования */
+        .winner-banner {
+            padding: 20px; border-radius: 20px; margin-bottom: 20px; text-align: center;
+        }
+        .winner-spy { background: rgba(244,63,94,0.2); border: 2px solid var(--danger); }
+        .winner-civil { background: rgba(16,185,129,0.2); border: 2px solid var(--accent); }
+        .winner-banner h2 { font-size: 24px; margin: 0 0 5px; }
+
+        /* XP badge */
+        .xp-badge {
+            background: var(--primary); color: white; padding: 2px 8px;
+            border-radius: 8px; font-size: 11px; font-weight: 800;
+        }
+        .xp-badge.gold { background: var(--vip-grad); color: black; }
+    </style>
+
+
+
+<div id="hall-active-layer"></div>
+
+<div id="hall-overlay">
+    <div style="position:absolute; top:40px; left:0; width:100%; text-align:center; color:white; pointer-events:none;">
+        <p style="font-weight:800; font-family:&#39;Exo 2&#39;,sans-serif;">ПЕРЕТАЩИТЕ ТЕКСТ</p>
+        <button onclick="closeHallEditor()" style="width:180px; background:var(--accent); pointer-events:auto;">СОХРАНИТЬ</button>
+    </div>
+    <div id="hall-preview-text">ТЫ ШПИОН!</div>
+</div>
+
+<div class="app" id="main-ui">
+    <div class="nav">
+        <button id="tab-btn-play" class="tab active" onclick="setTab(&#39;play&#39;)">Игра</button>
+        <button id="tab-btn-players" class="tab" onclick="setTab(&#39;players&#39;)">Игроки</button>
+        <button id="tab-btn-themes" class="tab" onclick="setTab(&#39;themes&#39;)">Темы</button>
+        <button id="tab-btn-stats" class="tab" onclick="setTab(&#39;stats&#39;)">Топ</button>
+    </div>
+
+    <!-- ВКЛАДКА ИГРА -->
+    <div id="tab-play" class="">
+        <div class="card">
+            <h2>⚙️ Параметры раунда</h2>
+            <select id="cfg-spies">
+                <option value="1">1 ШПИОН</option>
+                <option value="2">2 ШПИОНА</option>
+            </select>
+            <label style="font-size:11px; opacity:0.5; margin-bottom:4px; display:block;">Шанс доп. шпиона: <span id="ch-val">0</span>%</label>
+            <input type="range" id="cfg-ch" min="0" max="100" value="0" oninput="document.getElementById(&#39;ch-val&#39;).innerText=this.value">
+        </div>
+        <div class="card">
+            <h2>🗂 Темы миссий</h2>
+            <div id="theme-sel" style="display:flex; flex-wrap:wrap; gap:8px;"><div class="chip selected" onclick="this.classList.toggle(&#39;selected&#39;)">MINECRAFT</div><div class="chip selected" onclick="this.classList.toggle(&#39;selected&#39;)">DISNEY</div><div class="chip selected" onclick="this.classList.toggle(&#39;selected&#39;)">МЕМЫ</div><div class="chip selected" onclick="this.classList.toggle(&#39;selected&#39;)">ИГРЫ</div></div>
+        </div>
+        <button onclick="startGame()" style="font-size:18px; padding:22px; margin-bottom:8px;">▶ НАЧАТЬ МИССИЮ</button>
+    </div>
+
+    <!-- ВКЛАДКА ИГРОКИ -->
+    <div id="tab-players" class="hidden">
+        <div class="card">
+            <h2>👤 Список агентов</h2>
+            <div id="player-list-full"></div>
+            <button onclick="addNewPlayer()" class="btn-sec" style="margin-top:8px;">+ Добавить агента</button>
+        </div>
+    </div>
+
+    <!-- ВКЛАДКА ТЕМЫ -->
+    <div id="tab-themes" class="hidden">
+        <div class="card">
+            <h2>➕ Новый архив</h2>
+            <input id="in-th-name" placeholder="Название темы">
+            <textarea id="in-th-words" placeholder="Слова через запятую..."></textarea>
+            <button onclick="saveNewTheme()">Создать тему</button>
+        </div>
+        <div id="theme-list-full"></div>
+    </div>
+
+    <!-- ВКЛАДКА СТАТИСТИКА -->
+    <div id="tab-stats" class="hidden">
+        <div class="card">
+            <h2>🏆 Таблица XP</h2>
+            <div id="stat-list"></div>
+        </div>
+    </div>
+
+    <div class="secret-trig" id="adm-trig">v3.4 PRO CORE</div>
+</div>
+
+<!-- ИГРОВОЙ ЭКРАН -->
+<div id="game-view" class="hidden">
+    <!-- Передай телефон -->
+    <div id="stage-pass" class="hidden">
+        <p style="opacity:0.5; letter-spacing:3px; font-size:12px; margin-bottom:5px;">ПЕРЕДАЙ ТЕЛЕФОН:</p>
+        <h1 id="p-name-pass" style="font-size:46px; margin:10px 0;">?</h1>
+        <button onclick="viewRole()" class="btn-accent">ОТКРЫТЬ РОЛЬ</button>
+    </div>
+
+    <!-- Роль -->
+    <div id="stage-role" class="hidden">
+        <div id="role-box"></div>
+        <button onclick="nextP()" style="margin-top:25px;">Я ЗАПОМНИЛ →</button>
+    </div>
+
+    <!-- Обсуждение -->
+    <div id="stage-discuss" class="hidden">
+        <div style="font-size:60px; margin-bottom:10px;">🗣</div>
+        <h1>ОБСУЖДЕНИЕ</h1>
+        <p style="opacity:0.5; margin-bottom:30px;">Найдите шпиона!</p>
+        <button onclick="goVote()">ПЕРЕЙТИ К ГОЛОСОВАНИЮ</button>
+    </div>
+
+    <!-- Голосование: передача -->
+    <div id="stage-vote-pass" class="hidden">
+        <p style="opacity:0.5; letter-spacing:3px; font-size:12px; margin-bottom:5px;">ГОЛОСУЕТ:</p>
+        <h1 id="vote-voter-name" style="font-size:40px; margin:10px 0;"></h1>
+        <p style="opacity:0.4; font-size:13px; margin-bottom:30px;">Передай телефон этому игроку</p>
+        <button onclick="startPlayerVote()" class="btn-danger">🗳 ГОЛОСОВАТЬ</button>
+    </div>
+
+    <!-- Голосование: выбор -->
+    <div id="stage-vote" class="hidden">
+        <h2 style="color:var(--danger); letter-spacing:2px;">⚡ ГОЛОСОВАНИЕ</h2>
+        <p id="vote-who-label" style="opacity:0.5; font-size:12px; margin-bottom:20px;"></p>
+        <div id="vote-grid"></div>
+        <button onclick="confirmVote()" class="btn-danger" style="margin-top:15px;">✓ ПОДТВЕРДИТЬ ГОЛОС</button>
+    </div>
+
+    <!-- Результаты -->
+    <div id="stage-res" class="hidden">
+        <div id="winner-banner-box"></div>
+        <div id="res-list" style="width:100%; max-width:400px; margin-bottom:20px;"></div>
+        <button onclick="location.reload()">↩ В ГЛАВНОЕ МЕНЮ</button>
+    </div>
+</div>
+
+<!-- АДМИН ПАНЕЛЬ -->
+<div id="admin-panel">
+    <div class="adm-header">
+        <h2 style="color:var(--danger); font-size:16px; margin:0;">⚠ OVERLORD ПАНЕЛЬ</h2>
+        <p style="opacity:0.4; font-size:11px; margin:5px 0 0;">Секретный режим управления игрой</p>
+    </div>
+
+    <!-- 1. FORCE SPY -->
+    <div class="adm-section">
+        <span class="adm-label">🎯 Назначить шпиона</span>
+        <select id="adm-force-spy"></select>
+        <p style="font-size:11px; opacity:0.4; margin:4px 0 0;">Выбранный игрок гарантированно станет шпионом в след. раунде.</p>
+    </div>
+
+    <!-- 2. РЕЖИМЫ -->
+    <div class="adm-section">
+        <span class="adm-label">🌀 Режим игры</span>
+        <select id="adm-chaos">
+            <option value="0">Обычный режим</option>
+            <option value="33">Chaos Mode (33% шпионов)</option>
+            <option value="100">Паранойя (все шпионы)</option>
+        </select>
+        <div class="vip-grid" style="margin-top:10px;">
+            <label><input type="checkbox" id="f-fake"> Fake Info</label>
+            <label><input type="checkbox" id="f-alarm"> Ложная тревога</label>
+            <label><input type="checkbox" id="f-para"> Параноик</label>
+            <label><input type="checkbox" id="f-double"> Двойной агент</label>
+        </div>
+    </div>
+
+    <!-- 3. ГАЛЛЮЦИНАЦИИ -->
+    <div class="adm-section">
+        <span class="adm-label">👁 Галлюцинации</span>
+        <div class="toggle-row">
+            <span>Включить галлюцинации</span>
+            <label class="toggle">
+                <input type="checkbox" id="hall-enabled" onchange="toggleHallParams()">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <div id="hall-params-box" class="hall-params collapsed">
+            <input id="adm-h-txt" placeholder="Текст надписи" value="ТЫ ШПИОН!" style="margin-top:10px;">
+            <div style="display:flex; gap:8px;">
+                <div style="flex:1;">
+                    <span style="font-size:10px; opacity:0.5; display:block; margin-bottom:4px;">Цвет</span>
+                    <input type="color" id="adm-h-clr" value="#ff0000">
+                </div>
+                <div style="flex:1;">
+                    <span style="font-size:10px; opacity:0.5; display:block; margin-bottom:4px;">Шрифт (px)</span>
+                    <input type="number" id="adm-h-sz" value="45">
+                </div>
+                <div style="flex:1;">
+                    <span style="font-size:10px; opacity:0.5; display:block; margin-bottom:4px;">Время (сек)</span>
+                    <input type="number" id="adm-h-tm" value="1.5" step="0.1">
+                </div>
+            </div>
+            <span style="font-size:11px; opacity:0.5; display:block; margin-bottom:6px;">Момент появления:</span>
+            <select id="adm-h-moment">
+                <option value="pass">При передаче карты</option>
+                <option value="role">При просмотре роли</option>
+                <option value="vote">Во время голосования</option>
+            </select>
+            <button onclick="openHallEditor()" class="btn-sec" style="margin-top:6px;">📍 Настроить расположение</button>
+            <input type="hidden" id="adm-h-px" value="50">
+            <input type="hidden" id="adm-h-py" value="40">
+        </div>
+    </div>
+
+    <!-- 4. VIP -->
+    <div class="adm-section">
+        <span class="adm-label">⭐ VIP привилегии</span>
+        <div class="vip-grid">
+            <label><input type="checkbox" id="v-1" checked=""> Анти-Хаос</label>
+            <label><input type="checkbox" id="v-2" checked=""> Вето (x3)</label>
+            <label><input type="checkbox" id="v-3" checked=""> Взгляд (●)</label>
+            <label><input type="checkbox" id="v-4" checked=""> 2-й Шанс</label>
+            <label><input type="checkbox" id="v-5" checked=""> Лже-Алиби</label>
+            <label><input type="checkbox" id="v-6" checked=""> Маскировка</label>
+            <label><input type="checkbox" id="v-7" checked=""> Бонус XP</label>
+            <label><input type="checkbox" id="v-8" checked=""> Золотой ник</label>
+            <label><input type="checkbox" id="v-9" checked=""> Скрытый вид</label>
+            <label><input type="checkbox" id="v-10" checked=""> Анти-Галл.</label>
+        </div>
+        <select id="adm-vip-sel" style="margin-bottom:10px;"></select>
+        <div style="display:flex; gap:8px;">
+            <button onclick="applyVip(true)" style="background:var(--vip-grad); color:black; font-family:&#39;Exo 2&#39;,sans-serif; flex:1;">⭐ ВЫДАТЬ VIP</button>
+            <button onclick="applyVip(false)" class="btn-sec" style="flex:1;">✕ СНЯТЬ VIP</button>
+        </div>
+    </div>
+
+    <button onclick="hideAdm()" class="btn-sec" style="margin-top:20px; margin-bottom:40px;">✖ ЗАКРЫТЬ ТЕРМИНАЛ</button>
+</div>
+
+<script>
+// ===================== ДАННЫЕ =====================
+let themes = JSON.parse(localStorage.getItem('sv10_th')) || {
+    "MINECRAFT": ["Крипер","Стив","Алмаз","Эндермен","Бедрок"],
+    "DISNEY": ["Микки","Симба","Эльза","Шрам","Гуфи"],
+    "МЕМЫ": ["Доге","Гигачад","Рик Ролл","Хасбик","Ждун"],
+    "ИГРЫ": ["Dota 2","Roblox","CS2","Minecraft","GTA 5"],
+    "ШКОЛА": ["Директор","Физрук","Завуч","Столовая","Дневник"]
+};
+let players = JSON.parse(localStorage.getItem('sv10_pl')) || [
+    {name:"Игрок 1", score:0, active:true, vip:false},
+    {name:"Игрок 2", score:0, active:true, vip:false},
+    {name:"Игрок 3", score:0, active:true, vip:false}
+];
+let game = { cur: 0, session: [], votedFor: null };
+
+function save() {
+    localStorage.setItem('sv10_th', JSON.stringify(themes));
+    localStorage.setItem('sv10_pl', JSON.stringify(players));
+}
+
+// ===================== НАВИГАЦИЯ =====================
+function setTab(t) {
+    document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-btn-' + t).classList.add('active');
+    document.querySelectorAll('.app > div[id^="tab-"]').forEach(d => d.classList.add('hidden'));
+    document.getElementById('tab-' + t).classList.remove('hidden');
+    if (t === 'play') renderThemeChips();
+    if (t === 'players') renderPlayers();
+    if (t === 'themes') renderThemeEditor();
+    if (t === 'stats') renderStats();
+}
+
+// ===================== ИГРОКИ =====================
+function renderPlayers() {
+    document.getElementById('player-list-full').innerHTML = players.map((p, i) => `
+        <div class="player-row">
+            <input value="${p.name}" onchange="players[${i}].name=this.value; save();" placeholder="Имя игрока">
+            <button onclick="toggleActive(${i})" class="btn-sm ${p.active ? 'btn-accent' : 'btn-sec'}" style="width:50px;">
+                ${p.active ? '✓' : '✗'}
+            </button>
+            <button onclick="removePlayer(${i})" class="btn-sm btn-danger" style="width:40px;">✕</button>
+        </div>
+    `).join('');
+}
+
+function toggleActive(i) {
+    players[i].active = !players[i].active;
+    save();
+    renderPlayers();
+}
+
+function removePlayer(i) {
+    if (players.length <= 3) return alert('Минимум 3 игрока!');
+    players.splice(i, 1);
+    save();
+    renderPlayers();
+}
+
+function addNewPlayer() {
+    players.push({name: 'Игрок ' + (players.length + 1), score: 0, active: true, vip: false});
+    save();
+    renderPlayers();
+}
+
+// ===================== ТЕМЫ (редактор) =====================
+function renderThemeEditor() {
+    const keys = Object.keys(themes);
+    document.getElementById('theme-list-full').innerHTML = keys.map(k => `
+        <div class="theme-edit-card">
+            <div class="theme-edit-header">
+                <input value="${k}" id="th-name-${k}" onchange="renameTheme('${k}', this.value)" style="font-weight:800; font-size:13px;">
+                <button onclick="deleteTheme('${k}')" class="btn-sm btn-danger" style="margin-left:8px; flex-shrink:0;">Удалить</button>
+            </div>
+            <textarea id="th-words-${k}" style="font-size:12px;">${themes[k].join(', ')}</textarea>
+            <button onclick="saveThemeWords('${k}')" class="btn-sm btn-accent" style="width:100%; margin-top:4px;">Сохранить слова</button>
+        </div>
+    `).join('');
+}
+
+function renameTheme(oldKey, newKey) {
+    newKey = newKey.trim().toUpperCase();
+    if (!newKey || newKey === oldKey || themes[newKey]) return;
+    themes[newKey] = themes[oldKey];
+    delete themes[oldKey];
+    save();
+    renderThemeEditor();
+}
+
+function saveThemeWords(key) {
+    const raw = document.getElementById('th-words-' + key).value;
+    themes[key] = raw.split(',').map(w => w.trim()).filter(Boolean);
+    save();
+    alert('Слова сохранены!');
+}
+
+function deleteTheme(key) {
+    if (Object.keys(themes).length <= 1) return alert('Нужна хотя бы одна тема!');
+    if (!confirm('Удалить тему «' + key + '»?')) return;
+    delete themes[key];
+    save();
+    renderThemeEditor();
+}
+
+function saveNewTheme() {
+    const name = document.getElementById('in-th-name').value.trim().toUpperCase();
+    const words = document.getElementById('in-th-words').value.split(',').map(w => w.trim()).filter(Boolean);
+    if (!name) return alert('Введите название темы!');
+    if (words.length < 3) return alert('Добавьте минимум 3 слова!');
+    themes[name] = words;
+    save();
+    document.getElementById('in-th-name').value = '';
+    document.getElementById('in-th-words').value = '';
+    renderThemeEditor();
+    alert('Тема «' + name + '» создана!');
+}
+
+// ===================== ТЕМЫ (чипсы) =====================
+function renderThemeChips() {
+    document.getElementById('theme-sel').innerHTML = Object.keys(themes).map(t =>
+        `<div class="chip selected" onclick="this.classList.toggle('selected')">${t}</div>`
+    ).join('');
+}
+
+// ===================== СТАТИСТИКА =====================
+function renderStats() {
+    const sorted = [...players].sort((a, b) => b.score - a.score);
+    document.getElementById('stat-list').innerHTML = sorted.map((p, i) => `
+        <div class="stat-item">
+            <span style="font-weight:700;">${i+1}. ${p.name} ${p.vip ? '⭐' : ''}</span>
+            <span class="xp-badge ${p.vip ? 'gold' : ''}">${p.score} XP</span>
+        </div>
+    `).join('') || '<p style="opacity:0.4; text-align:center;">Нет данных</p>';
+}
+
+// ===================== ГАЛЛЮЦИНАЦИИ =====================
+function toggleHallParams() {
+    const box = document.getElementById('hall-params-box');
+    const enabled = document.getElementById('hall-enabled').checked;
+    box.classList.toggle('collapsed', !enabled);
+}
+
+function triggerHallucination(moment) {
+    if (!document.getElementById('hall-enabled').checked) return;
+    if (document.getElementById('adm-h-moment').value !== moment) return;
+    const p = game.session[game.cur];
+    if (p && p.vip && document.getElementById('v-10').checked) return;
+
+    const layer = document.getElementById('hall-active-layer');
+    layer.innerText = document.getElementById('adm-h-txt').value;
+    layer.style.color = document.getElementById('adm-h-clr').value;
+    layer.style.fontSize = document.getElementById('adm-h-sz').value + 'px';
+    layer.style.left = document.getElementById('adm-h-px').value + '%';
+    layer.style.top = document.getElementById('adm-h-py').value + '%';
+    layer.style.display = 'block';
+    setTimeout(() => layer.style.display = 'none', parseFloat(document.getElementById('adm-h-tm').value) * 1000);
+}
+
+let isDragging = false;
+const pText = document.getElementById('hall-preview-text');
+function openHallEditor() {
+    document.getElementById('hall-overlay').style.display = 'block';
+    pText.innerText = document.getElementById('adm-h-txt').value;
+    pText.style.color = document.getElementById('adm-h-clr').value;
+    pText.style.fontSize = document.getElementById('adm-h-sz').value + 'px';
+}
+function closeHallEditor() { document.getElementById('hall-overlay').style.display = 'none'; }
+
+const doDrag = (e) => {
+    if (!isDragging) return;
+    const x = e.touches ? e.touches[0].clientX : e.clientX;
+    const y = e.touches ? e.touches[0].clientY : e.clientY;
+    const px = (x / window.innerWidth) * 100;
+    const py = (y / window.innerHeight) * 100;
+    pText.style.left = px + '%'; pText.style.top = py + '%';
+    document.getElementById('adm-h-px').value = Math.round(px);
+    document.getElementById('adm-h-py').value = Math.round(py);
+};
+pText.addEventListener('mousedown', () => isDragging = true);
+pText.addEventListener('touchstart', () => isDragging = true);
+window.addEventListener('mousemove', doDrag);
+window.addEventListener('touchmove', doDrag);
+window.addEventListener('mouseup', () => isDragging = false);
+window.addEventListener('touchend', () => isDragging = false);
+
+// ===================== ГЕЙМПЛЕЙ =====================
+function startGame() {
+    const active = players.filter(p => p.active);
+    if (active.length < 3) return alert('Нужно минимум 3 активных игрока!');
+
+    const selTh = Array.from(document.querySelectorAll('.chip.selected')).map(c => c.innerText);
+    if (!selTh.length) return alert('Выберите хотя бы одну тему!');
+
+    const cat = selTh[Math.floor(Math.random() * selTh.length)];
+    const word = themes[cat][Math.floor(Math.random() * themes[cat].length)];
+
+    game.session = active.map(p => ({ ...p, isSpy: false, isDouble: false, cat, word }));
+    game.votedFor = null;
+
+    const chaosVal = parseInt(document.getElementById('adm-chaos').value);
+
+    if (chaosVal === 100) {
+        game.session.forEach(p => p.isSpy = true);
+    } else {
+        const count = chaosVal === 33 ? Math.max(1, Math.round(game.session.length * 0.33)) : parseInt(document.getElementById('cfg-spies').value);
+        const forced = document.getElementById('adm-force-spy').value;
+
+        // Перемешиваем для случайного выбора
+        const shuffled = [...game.session].sort(() => Math.random() - 0.5);
+        let assigned = 0;
+        for (let p of shuffled) {
+            if (assigned >= count) break;
+            p.isSpy = true;
+            assigned++;
+        }
+
+        // Force spy override
+        if (forced !== 'none') {
+            game.session.forEach(p => p.isSpy = false);
+            const target = game.session.find(p => p.name === forced);
+            if (target) target.isSpy = true;
+        }
+
+        // Двойной агент: шпион видит слово, но отображается как мирный
+        if (document.getElementById('f-double').checked) {
+            const spy = game.session.find(p => p.isSpy);
+            if (spy) spy.isDouble = true;
+        }
+    }
+
+    game.cur = 0;
+    document.getElementById('main-ui').classList.add('hidden');
+    document.getElementById('game-view').classList.remove('hidden');
+    showGameStage('pass');
+}
+
+function showGameStage(s) {
+    document.querySelectorAll('#game-view > div').forEach(d => d.classList.add('hidden'));
+    document.getElementById('stage-' + s).classList.remove('hidden');
+
+    if (s === 'pass') {
+        document.getElementById('p-name-pass').innerText = game.session[game.cur].name;
+        triggerHallucination('pass');
+    }
+}
+
+function viewRole() {
+    const p = game.session[game.cur];
+    let roleHtml = '';
+
+    if (p.isSpy && !p.isDouble) {
+        // Ложная тревога: случайный мирный видит "Ты шпион" (визуально)
+        if (document.getElementById('f-alarm').checked && !p.isSpy && Math.random() < 0.15) {
+            roleHtml = `<h1 style="color:var(--danger)">⚠ ТЫ ШПИОН?</h1><p style="opacity:0.5; font-size:13px;">...нет, расслабься. Ты мирный.</p><h2 style="color:var(--accent)">${p.word}</h2>`;
+        } else {
+            // Fake Info
+            if (document.getElementById('f-fake').checked) {
+                roleHtml = `<p style="font-size:12px; color:var(--danger); letter-spacing:2px;">ШПИОН / ЛЕГЕНДА</p><h1 style="color:var(--danger)">ТЫ ШПИОН</h1><p style="opacity:0.5; font-size:13px;">Твоя легенда:</p><h2 style="color:var(--accent)">${p.word}</h2>`;
+            } else {
+                roleHtml = `<p style="font-size:12px; color:var(--danger); letter-spacing:2px;">СЕКРЕТНО</p><h1 style="color:var(--danger)">🕵 ТЫ ШПИОН</h1>`;
+            }
+        }
+    } else {
+        const displayWord = p.isDouble ? p.word : p.word;
+        roleHtml = `<p style="font-size:12px; opacity:0.5; letter-spacing:2px;">КАТЕГОРИЯ</p><h2 style="color:white;">${p.cat}</h2><p style="font-size:12px; opacity:0.5; letter-spacing:2px; margin-top:15px;">СЛОВО</p><h1 style="color:var(--accent);">${displayWord}</h1>`;
+    }
+
+    document.getElementById('role-box').innerHTML = roleHtml;
+    showGameStage('role');
+    triggerHallucination('role');
+}
+
+function nextP() {
+    game.cur++;
+    if (game.cur < game.session.length) showGameStage('pass');
+    else showGameStage('discuss');
+}
+
+// ===================== ГОЛОСОВАНИЕ (пошаговое) =====================
+// game.votes = { playerName: votedForIndex }
+// game.voteStep = текущий голосующий игрок (индекс в session)
+// game.currentVotePick = выбранный индекс в текущем голосовании
+
+function goVote() {
+    game.votes = {};
+    game.voteStep = 0;
+    game.currentVotePick = null;
+    triggerHallucination('vote');
+    showVotePassScreen();
+}
+
+function showVotePassScreen() {
+    const voter = game.session[game.voteStep];
+    document.getElementById('vote-voter-name').innerText = voter.name;
+    showGameStage('vote-pass');
+}
+
+function startPlayerVote() {
+    game.currentVotePick = null;
+    const voter = game.session[game.voteStep];
+    document.getElementById('vote-who-label').innerText = voter.name + ' — выберите подозреваемого:';
+
+    const grid = document.getElementById('vote-grid');
+    grid.innerHTML = game.session.map((p, i) => {
+        // Нельзя голосовать за себя
+        if (p.name === voter.name) return `
+            <div class="vote-item" style="opacity:0.3; cursor:default;">
+                <span style="font-weight:700;">${p.name} ${p.vip ? '⭐' : ''}</span>
+                <span style="font-size:11px; opacity:0.5;">— ты сам —</span>
+            </div>`;
+        return `
+            <div class="vote-item" id="vote-${i}" onclick="pickVote(${i})">
+                <span style="font-weight:700;">${p.name} ${p.vip ? '⭐' : ''}</span>
+                <span style="opacity:0.3; font-size:20px;">○</span>
+            </div>`;
+    }).join('');
+
+    showGameStage('vote');
+}
+
+function pickVote(i) {
+    game.currentVotePick = i;
+    document.querySelectorAll('.vote-item').forEach((el, idx) => {
+        el.classList.toggle('voted', idx === i);
+        const dot = el.querySelector('span:last-child');
+        if (dot) dot.innerText = idx === i ? '●' : '○';
+    });
+}
+
+function confirmVote() {
+    if (game.currentVotePick === null) return alert('Выберите подозреваемого!');
+    const voter = game.session[game.voteStep];
+    game.votes[voter.name] = game.currentVotePick;
+
+    game.voteStep++;
+    if (game.voteStep < game.session.length) {
+        showVotePassScreen();
+    } else {
+        showFinal();
+    }
+}
+
+function showFinal() {
+    showGameStage('res');
+
+    // Подсчёт голосов
+    const voteCount = {};
+    game.session.forEach((_, i) => voteCount[i] = 0);
+    Object.values(game.votes).forEach(i => { voteCount[i] = (voteCount[i] || 0) + 1; });
+
+    // Кто набрал максимум
+    const maxVotes = Math.max(...Object.values(voteCount));
+    const accused = game.session[parseInt(Object.keys(voteCount).find(k => voteCount[k] === maxVotes))];
+    const spies = game.session.filter(p => p.isSpy);
+    const accusedIsSpy = accused.isSpy;
+
+    // === НАЧИСЛЕНИЕ XP ===
+    game.session.forEach(p => {
+        const orig = players.find(pl => pl.name === p.name);
+        if (!orig) return;
+        if (accusedIsSpy) {
+            if (!p.isSpy) {
+                let xp = 1;
+                if (p.vip && document.getElementById('v-7').checked) xp++;
+                orig.score += xp;
+            }
+        } else {
+            if (p.isSpy) {
+                let xp = 2;
+                if (p.vip && document.getElementById('v-7').checked) xp++;
+                orig.score += xp;
+            }
+        }
+    });
+    save();
+
+    // === БАННЕР ===
+    const bannerBox = document.getElementById('winner-banner-box');
+    if (accusedIsSpy) {
+        bannerBox.innerHTML = `<div class="winner-banner winner-civil"><h2>🎉 ШПИОН ПОЙМАН!</h2><p style="opacity:0.7; margin:0;">${accused.name} получил ${maxVotes} голос(а) и был разоблачён!</p></div>`;
+    } else {
+        const spyNames = spies.map(s => s.name).join(', ');
+        bannerBox.innerHTML = `<div class="winner-banner winner-spy"><h2>🕵 ШПИОН УСКОЛЬЗНУЛ!</h2><p style="opacity:0.7; margin:0;">Выгнали ${accused.name}, но настоящий шпион: <strong>${spyNames}</strong></p></div>`;
+    }
+
+    // === ИТОГИ ГОЛОСОВАНИЯ ===
+    // Сортируем по голосам
+    const sorted = game.session.map((p, i) => ({ p, i, votes: voteCount[i] || 0 }))
+        .sort((a, b) => b.votes - a.votes);
+
+    const resList = document.getElementById('res-list');
+    resList.innerHTML = `
+        <div style="font-size:11px; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; font-weight:800;">Итоги голосования</div>
+        ${sorted.map(({ p, votes }) => {
+            const orig = players.find(pl => pl.name === p.name);
+            const isAccused = p === accused;
+            const cls = p.isSpy ? 'res-spy' : 'res-civil';
+            const role = p.isSpy ? '🕵 ШПИОН' : `✅ ${p.word}`;
+            const xpLine = (accusedIsSpy && !p.isSpy) ? '+1 XP' : ((!accusedIsSpy && p.isSpy) ? '+2 XP' : '');
+            const bar = votes > 0 ? `<div style="height:4px; background:var(--danger); border-radius:4px; width:${Math.round((votes/game.session.length)*100)}%; margin-top:5px; opacity:0.7;"></div>` : '';
+            return `
+                <div class="res-item ${cls}" style="${isAccused ? 'border-width:2px;' : ''}">
+                    <div style="flex:1;">
+                        <span style="font-weight:700;">${isAccused ? '👉 ' : ''}${p.name} ${p.vip ? '⭐' : ''}</span>
+                        <span style="display:block; font-size:11px; opacity:0.6; margin-top:2px;">${role}</span>
+                        ${bar}
+                    </div>
+                    <div style="text-align:right; flex-shrink:0; margin-left:10px;">
+                        <span style="font-size:18px; font-weight:900; color:${votes>0?'var(--danger)':'rgba(255,255,255,0.2)'};">${votes}</span>
+                        <span style="display:block; font-size:10px; opacity:0.4;">голос(а)</span>
+                        ${xpLine ? `<span class="xp-badge" style="margin-top:4px; display:inline-block;">${xpLine}</span>` : ''}
+                    </div>
+                </div>`;
+        }).join('')}
+        <div style="font-size:11px; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin:15px 0 10px; font-weight:800;">Кто за кого голосовал</div>
+        ${game.session.map(voter => {
+            const votedIdx = game.votes[voter.name];
+            const votedFor = game.session[votedIdx];
+            return `<div style="display:flex; justify-content:space-between; font-size:12px; padding:6px 10px; border-radius:10px; background:rgba(255,255,255,0.03); margin-bottom:4px;">
+                <span style="opacity:0.7;">${voter.name}</span>
+                <span>→ <strong>${votedFor ? votedFor.name : '?'}</strong></span>
+            </div>`;
+        }).join('')}
+    `;
+}
+
+// ===================== АДМИНКА =====================
+let aT;
+document.getElementById('adm-trig').onmousedown = () => aT = setTimeout(showAdm, 2000);
+document.getElementById('adm-trig').onmouseup = () => clearTimeout(aT);
+document.getElementById('adm-trig').ontouchstart = () => aT = setTimeout(showAdm, 2000);
+document.getElementById('adm-trig').ontouchend = () => clearTimeout(aT);
+
+function showAdm() {
+    document.getElementById('admin-panel').style.display = 'block';
+    const opt = players.map(p => `<option value="${p.name}">${p.name} (${p.score} XP)</option>`).join('');
+    document.getElementById('adm-force-spy').innerHTML = '<option value="none">— Случайный —</option>' + opt;
+    document.getElementById('adm-vip-sel').innerHTML = opt;
+}
+function hideAdm() { document.getElementById('admin-panel').style.display = 'none'; }
+
+function applyVip(grant) {
+    const n = document.getElementById('adm-vip-sel').value;
+    players.forEach(p => { if (p.name === n) p.vip = grant; });
+    save();
+    alert(grant ? `⭐ VIP статус выдан: ${n}` : `✕ VIP статус снят: ${n}`);
+}
+
+// ===================== ИНИТ =====================
+setTab('play');
+</script>
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
+</script>
+
+</body></html>
